@@ -1,148 +1,164 @@
-import json
-import os
-import re
+"""
+Dubizzle stage 1 scraper — collects listing URLs and basic info.
+Paginates via &page=N (175 pages, ~35 listings each ≈ 6,100 total).
+Output: output/dubizzle_listings.json
+
+Run: python3 dubizzle.py
+"""
 
 from botasaurus.browser import browser, Driver
+from botasaurus.soupify import soupify
+import json, os, time, re, random
 
-MAX_LISTINGS = 25
-PROGRESS_FILE = "output/dubizzle_listings.json"
-BASE_URL = "https://dubai.dubizzle.com"
+DEBUG = True  # Must run non-headless — Dubizzle uses Incapsula bot detection that blocks headless Chrome
+               # On the server use: xvfb-run -a python3 -u dubizzle.py
 
+NEIGHBORHOODS = [84, 66, 89, 64126, 65636, 62028, 189, 62449, 62237, 190, 64, 94]
+BASE_PARAMS   = "&".join(f"neighborhood={n}" for n in NEIGHBORHOODS)
+BASE_URL      = f"https://dubai.dubizzle.com/en/property-for-rent/residential/?{BASE_PARAMS}"
 
-def load_progress():
-    if not os.path.exists(PROGRESS_FILE):
-        return [], set(), 1
-    with open(PROGRESS_FILE, encoding="utf-8") as f:
-        data = json.load(f)
-    listings = data.get("listings", [])
-    seen = {l["link"] for l in listings if l.get("link")}
-    next_page = data.get("next_page", 1)
-    return listings, seen, next_page
+OUTPUT_FILE    = os.path.join(os.path.dirname(__file__), "output", "dubizzle_listings.json")
+PROGRESS_FILE  = os.path.join(os.path.dirname(__file__), "output", "dubizzle_progress.json")
 
 
-def save_progress(listings, next_page):
-    os.makedirs("output", exist_ok=True)
-    with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
-        json.dump({"count": len(listings), "next_page": next_page,
-                   "listings": listings}, f, ensure_ascii=False, indent=2)
+def build_url(page):
+    return f"{BASE_URL}&page={page}"
 
 
-def clean(text):
-    if not text:
-        return None
-    text = re.sub(r"&amp;", "&", text)
-    text = re.sub(r"&nbsp;", " ", text)
-    text = re.sub(r"<[^>]+>", " ", text)
-    return re.sub(r"\s+", " ", text).strip() or None
+def load_done():
+    listings = {}
+    if os.path.exists(OUTPUT_FILE):
+        with open(OUTPUT_FILE) as f:
+            data = json.load(f)
+        listings = {l["url"]: l for l in data.get("listings", [])}
+    last_page = 1
+    if os.path.exists(PROGRESS_FILE):
+        with open(PROGRESS_FILE) as f:
+            last_page = json.load(f).get("next_page", 1)
+    return listings, last_page
 
 
-def inner_text(html, testid):
-    """Extract inner text of the element with a given data-testid (from raw HTML)."""
-    m = re.search(
-        r'data-testid="' + re.escape(testid) + r'"[^>]*>(.*?)</(?:p|span|div|h[1-6]|a)\b',
-        html, re.DOTALL
-    )
-    return clean(m.group(1)) if m else None
+def save(listings, next_page):
+    with open(OUTPUT_FILE, "w") as f:
+        json.dump({"count": len(listings), "listings": list(listings.values())}, f, indent=2, ensure_ascii=False)
+    with open(PROGRESS_FILE, "w") as f:
+        json.dump({"next_page": next_page}, f)
 
 
-def parse_page_html(html, seen_links, max_listings, current_count):
-    """Parse all listing cards from page HTML using regex — no WebDriver round trips."""
-    listings = []
+def get_last_page(soup):
+    """Read total page count from the last-page pagination button."""
+    el = soup.select_one('[data-testid="page-last"]')
+    if el:
+        href = el.get("href", "")
+        m = re.search(r'page=(\d+)', href)
+        if m:
+            return int(m.group(1))
+    # fallback: highest page-N testid
+    nums = [int(re.search(r'\d+', el.get("data-testid","")).group())
+            for el in soup.select('[data-testid^="page-"]')
+            if re.search(r'page-\d+', el.get("data-testid",""))]
+    return max(nums) if nums else 1
 
-    # Each listing card is: <a data-testid="listing-N" ... href="...">...</a>
-    # Split HTML into per-card chunks by finding each listing-N anchor's start
-    card_starts = [m.start() for m in re.finditer(r'<a\s[^>]*data-testid="listing-\d+"', html)]
 
-    for idx, start in enumerate(card_starts):
-        # Card ends at the next listing card start (or a generous window)
-        end = card_starts[idx + 1] if idx + 1 < len(card_starts) else start + 8000
-        card_html = html[start:end]
-
-        # Extract href
-        href_m = re.search(r'href="([^"]+)"', card_html)
-        if not href_m:
+def parse_cards(soup):
+    cards = soup.select('a[data-testid^="listing-"]')
+    results = {}
+    for card in cards:
+        href = card.get("href", "")
+        url = f"https://dubai.dubizzle.com{href}" if href and not href.startswith("http") else href
+        if not url:
             continue
-        href = href_m.group(1)
-        if "/property-for-sale/residential/" not in href:
-            continue
-        if href.startswith("/"):
-            href = BASE_URL + href
-        if href in seen_links:
+        # Skip navigation/filter links (no date segment)
+        if not re.search(r'\d{4}/\d+/\d+/', url):
             continue
 
-        # Skip if no price (project/promo cards have no listing-price)
-        price = inner_text(card_html, "listing-price")
-        if not price:
-            continue
+        def txt(*testids):
+            for tid in testids:
+                el = card.select_one(f'[data-testid="{tid}"]')
+                if el:
+                    return el.get_text(strip=True)
+            return None
 
-        seen_links.add(href)
-        listings.append({
-            "title": inner_text(card_html, "subheading-text"),
-            "price": f"AED {price}",
-            "type": inner_text(card_html, "category-text"),
-            "beds": inner_text(card_html, "listing-bedrooms"),
-            "baths": inner_text(card_html, "listing-bathrooms"),
-            "size_sqft": inner_text(card_html, "listing-size"),
-            "location": inner_text(card_html, "listing-location"),
-            "link": href,
-        })
-
-        if current_count + len(listings) >= max_listings:
-            break
-
-    return listings
+        results[url] = {
+            "url":      url,
+            "title":    card.get("title") or txt("listing-title"),
+            "price":    txt("listing-price"),
+            "location": txt("listing-location"),
+            "beds":     txt("listing-bedrooms"),
+            "baths":    txt("listing-bathrooms"),
+            "area":     txt("listing-size"),
+        }
+    return results
 
 
-@browser(add_arguments=["--no-sandbox", "--disable-dev-shm-usage"])
-def dubizzle_scrape(driver: Driver, data):
+@browser(
+    headless=not DEBUG,
+    add_arguments=["--no-sandbox", "--disable-dev-shm-usage",
+                   "--disable-blink-features=AutomationControlled"],
+)
+def scrape(driver: Driver, data):
+    done, start_page = load_done()
+    start_page = max(1, start_page)
+    print(f"Already collected: {len(done)} listings | Resuming from page {start_page}")
 
-    def scrape_page(page, listings, seen_links):
-        url = f"{BASE_URL}/en/property-for-sale/residential/?page={page}"
-        driver.get(url)
-        driver.sleep(6)
-        html = driver.page_html
-        new_listings = parse_page_html(html, seen_links, MAX_LISTINGS, len(listings))
-        listings.extend(new_listings)
-        return len(new_listings)
+    total_pages = 175  # known from page-last link; updated on first page load
 
-    listings, seen_links, page = load_progress()
-    if listings:
-        print(f"Resuming from page {page} with {len(listings)} listings", flush=True)
+    for page in range(start_page, total_pages + 1):
+        url = build_url(page)
+        print(f"\n[Page {page}/{total_pages}] ", end="", flush=True)
 
-    consecutive_failures = 0
-    while len(listings) < MAX_LISTINGS:
-        new_on_page = None
-        for attempt in range(1, 4):
+        try:
+            driver.get(url)
             try:
-                new_on_page = scrape_page(page, listings, seen_links)
-                break
-            except Exception as e:
-                print(f"page {page} attempt {attempt} failed: {type(e).__name__}; retrying",
-                      flush=True)
-                driver.sleep(5)
+                driver.wait_for_element('[data-testid^="listing-"]', wait=10)
+            except Exception:
+                time.sleep(5)
 
-        if new_on_page is None:
-            consecutive_failures += 1
-            if consecutive_failures >= 3:
-                print("3 pages failed in a row, browser likely dead. Aborting.", flush=True)
-                break
-            print(f"page {page} failed 3x, skipping it", flush=True)
-            page += 1
-            save_progress(listings, page)
-            continue
+            soup = soupify(driver)
 
-        consecutive_failures = 0
-        print(f"page {page}: +{new_on_page} new (total {len(listings)})", flush=True)
+            # Update total pages on first load
+            if page == start_page:
+                detected = get_last_page(soup)
+                if detected > 1:
+                    total_pages = detected
+                    print(f"(total pages: {total_pages}) ", end="")
 
-        if new_on_page == 0:
-            print("No more listings found, stopping.", flush=True)
-            save_progress(listings, page)
-            break
+            # Exit cleanly if Incapsula blocks — shell loop will restart with fresh browser
+            if 'Incapsula' in str(soup)[:1000]:
+                print(f"\n  [BLOCKED by Incapsula] Saving progress at page {page}, exiting for restart.")
+                save(done, page)
+                return list(done.values())
 
-        page += 1
-        save_progress(listings, page)
+            cards = parse_cards(soup)
 
-    return {"count": len(listings), "listings": listings}
+            if not cards:
+                # Might be a soft block or genuine end — check next page before giving up
+                print(f"  0 cards — checking if end of results...")
+                save(done, page + 1)
+                # Continue loop; if 3 consecutive empty pages, stop
+                consecutive_empty = getattr(scrape, '_empty', 0) + 1
+                scrape._empty = consecutive_empty
+                if consecutive_empty >= 3:
+                    print(f"  3 consecutive empty pages — done.")
+                    break
+            else:
+                scrape._empty = 0
+                new = {u: l for u, l in cards.items() if u not in done}
+                done.update(new)
+                print(f"{len(cards)} cards | {len(new)} new | Total: {len(done)}")
+                save(done, page + 1)
+
+        except Exception as e:
+            print(f"  ERROR: {e}")
+            save(done, page)
+
+        # Random delay to avoid triggering rate limits
+        time.sleep(random.uniform(4, 8))
+
+    save(done, total_pages)
+    print(f"\nDone. {len(done)} listings saved → {OUTPUT_FILE}")
+    return list(done.values())
 
 
-dubizzle_scrape()
+if __name__ == "__main__":
+    scrape()

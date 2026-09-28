@@ -42,3 +42,19 @@ error_logs/
 claude.md
 CLAUDE.md
 AGENTS.md
+
+# Keep project config files that the *.json / .env.* rules above would hide
+!.env.example
+!dashboard/package.json
+!dashboard/package-lock.json
+!dashboard/tsconfig.json
+
+# Confidential client reports (contain named third parties)
+*.pdf
+
+# Local tooling
+.claude/
+.venv/
+__pycache__/
+*.key
+*.pem

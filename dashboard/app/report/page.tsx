@@ -72,25 +72,26 @@ export default function ReportPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a] flex items-center justify-center text-zinc-400 dark:text-zinc-600">
+      <div className="min-h-full px-6 py-8 md:px-10 flex items-center justify-center text-[#9A8E84] dark:text-[#7A7068]">
         Loading report...
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-full px-6 py-8 md:px-10">
+      <div className="max-w-4xl mx-auto">
 
         {/* Toolbar */}
         <div className="print:hidden flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">Violation Report</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">Printable report of all confirmed permit conflicts</p>
+            <p className="text-xs font-semibold text-[#C17F5A] uppercase tracking-widest mb-1">Reports</p>
+            <h1 className="text-3xl font-bold text-[#1C1917] dark:text-[#F0EAE2] tracking-tight">Violation Report</h1>
+            <p className="text-sm text-[#9A8E84] dark:text-[#7A7068] mt-1">Printable report of all confirmed permit conflicts</p>
           </div>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-700 dark:hover:bg-zinc-300 text-white dark:text-zinc-900 text-sm font-medium px-5 py-2.5 rounded-lg shadow-sm transition-colors"
+            className="flex items-center gap-2 bg-stone-900 dark:bg-[#F0EBE3] hover:bg-stone-700 dark:hover:bg-stone-200 text-white dark:text-stone-900 text-sm font-medium px-5 py-2.5 rounded-2xl shadow-sm transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -101,30 +102,30 @@ export default function ReportPage() {
         </div>
 
         {/* Report document */}
-        <div className="bg-white dark:bg-[#111] shadow-sm rounded-xl border border-zinc-200 dark:border-[#222] print:shadow-none print:border-none print:rounded-none">
+        <div className="bg-white dark:bg-[#2C2822] rounded-2xl shadow-sm print:shadow-none print:border-none print:rounded-none">
 
           {/* Cover */}
-          <div className="px-12 pt-12 pb-8 border-b border-zinc-200 dark:border-[#222]">
-            <div className="flex items-start justify-between">
+          <div className="px-10 sm:px-12 pt-12 pb-8 border-b border-black/[0.06] dark:border-white/[0.06]">
+            <div className="flex items-start justify-between gap-6">
               <div>
-                <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2">Confidential</p>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white leading-tight">
+                <p className="text-xs font-bold text-[#9A8E84] dark:text-[#7A7068] uppercase tracking-[0.2em] mb-3">Confidential</p>
+                <h1 className="text-3xl font-bold text-[#1C1917] dark:text-[#F0EAE2] leading-tight">
                   Unauthorized Listing<br />Violation Report
                 </h1>
-                <p className="text-base text-zinc-500 dark:text-zinc-400 mt-3">
+                <p className="text-base text-[#9A8E84] dark:text-[#7A7068] mt-3">
                   Prepared by Dubai Residential L.L.C<br />
                   Date: {reportDate}
                 </p>
               </div>
-              <div className="text-right">
-                <div className="inline-block bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-6 py-4">
-                  <p className="text-xs text-red-500 dark:text-red-400 font-semibold uppercase tracking-wide">Total Violations</p>
+              <div className="text-right shrink-0">
+                <div className="inline-block bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl px-6 py-4">
+                  <p className="text-xs text-red-500 dark:text-red-400 font-bold uppercase tracking-wide">Total Violations</p>
                   <p className="text-5xl font-bold text-red-600 dark:text-red-400 mt-1">{conflicts.length}</p>
                 </div>
               </div>
             </div>
 
-            <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-6 leading-relaxed max-w-2xl">
+            <p className="text-sm text-[#1C1917] dark:text-[#F0EAE2] mt-6 leading-relaxed max-w-2xl">
               This report documents <strong>{conflicts.length} confirmed instances</strong> of unauthorized property listings
               on Bayut.com where third-party agents have listed Dubai Residential units using the company&apos;s
               registered DLD permit numbers without authorization. Each violation has been verified by matching
@@ -133,37 +134,37 @@ export default function ReportPage() {
           </div>
 
           {/* Executive Summary */}
-          <div className="px-12 py-8 border-b border-zinc-200 dark:border-[#222]">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-5">Executive Summary</h2>
+          <div className="px-10 sm:px-12 py-8 border-b border-black/[0.06] dark:border-white/[0.06]">
+            <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F0EAE2] mb-5">Executive Summary</h2>
 
-            <div className="grid grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-3 gap-4 mb-6">
               {[
-                { label: 'Units Compromised',   value: new Set(conflicts.map(c => c.permit_number)).size, sub: 'unique DLD permits' },
-                { label: 'Communities Affected', value: orderedCommunities.length,                         sub: 'out of 22 managed' },
-                { label: 'Agencies Involved',   value: agencySummary.length,                              sub: 'real estate agencies' },
+                { label: 'Units Compromised',    value: new Set(conflicts.map(c => c.permit_number)).size, sub: 'unique DLD permits'    },
+                { label: 'Communities Affected', value: orderedCommunities.length,                          sub: 'out of 22 managed'    },
+                { label: 'Agencies Involved',    value: agencySummary.length,                              sub: 'real estate agencies' },
               ].map(s => (
-                <div key={s.label} className="bg-zinc-50 dark:bg-[#1a1a1a] rounded-lg p-4 border border-zinc-200 dark:border-[#2a2a2a]">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{s.label}</p>
-                  <p className="text-2xl font-bold text-zinc-900 dark:text-white">{s.value}</p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{s.sub}</p>
+                <div key={s.label} className="bg-[#EAE4DC] dark:bg-[#1C1814] rounded-2xl p-4 shadow-sm">
+                  <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mb-1">{s.label}</p>
+                  <p className="text-2xl font-bold text-[#1C1917] dark:text-[#F0EAE2]">{s.value}</p>
+                  <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">{s.sub}</p>
                 </div>
               ))}
             </div>
 
             <table className="w-full text-sm mb-6">
               <thead>
-                <tr className="border-b border-zinc-200 dark:border-[#2a2a2a]">
-                  <th className="text-left text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Community</th>
-                  <th className="text-right text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Violations</th>
-                  <th className="text-right text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Share</th>
+                <tr className="border-b border-black/[0.06] dark:border-white/[0.06]">
+                  <th className="text-left text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Community</th>
+                  <th className="text-right text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Violations</th>
+                  <th className="text-right text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Share</th>
                 </tr>
               </thead>
               <tbody>
                 {orderedCommunities.map(comm => (
-                  <tr key={comm} className="border-b border-zinc-100 dark:border-[#222]">
-                    <td className="py-2 text-zinc-800 dark:text-zinc-200">{comm}</td>
-                    <td className="py-2 text-right font-semibold text-zinc-900 dark:text-white">{byCommunity[comm].length}</td>
-                    <td className="py-2 text-right text-zinc-500 dark:text-zinc-400">
+                  <tr key={comm} className="border-b border-black/[0.06] dark:border-white/[0.06]border-stone-100 ">
+                    <td className="py-2 text-[#1C1917] dark:text-[#F0EAE2]">{comm}</td>
+                    <td className="py-2 text-right font-semibold text-[#1C1917] dark:text-[#F0EAE2]">{byCommunity[comm].length}</td>
+                    <td className="py-2 text-right text-[#9A8E84] dark:text-[#7A7068]">
                       {Math.round((byCommunity[comm].length / conflicts.length) * 100)}%
                     </td>
                   </tr>
@@ -171,20 +172,20 @@ export default function ReportPage() {
               </tbody>
             </table>
 
-            <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">Agencies Involved</h3>
+            <h3 className="text-sm font-bold text-[#1C1917] dark:text-[#F0EAE2] mb-3">Agencies Involved</h3>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 dark:border-[#2a2a2a]">
-                  <th className="text-left text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Agency</th>
-                  <th className="text-left text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Agents</th>
-                  <th className="text-right text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wide py-2">Violations</th>
+                <tr className="border-b border-black/[0.06] dark:border-white/[0.06]">
+                  <th className="text-left text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Agency</th>
+                  <th className="text-left text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Agents</th>
+                  <th className="text-right text-xs text-[#9A8E84] dark:text-[#7A7068] font-semibold uppercase tracking-wide py-2">Violations</th>
                 </tr>
               </thead>
               <tbody>
                 {agencySummary.map(([agency, data]) => (
-                  <tr key={agency} className="border-b border-zinc-100 dark:border-[#222]">
-                    <td className="py-2 text-zinc-800 dark:text-zinc-200 font-medium">{agency}</td>
-                    <td className="py-2 text-zinc-500 dark:text-zinc-400 text-xs">{Array.from(data.agents).join(', ')}</td>
+                  <tr key={agency} className="border-b border-black/[0.06] dark:border-white/[0.06]border-stone-100 ">
+                    <td className="py-2 text-[#1C1917] dark:text-[#F0EAE2] font-medium">{agency}</td>
+                    <td className="py-2 text-[#9A8E84] dark:text-[#7A7068] text-xs">{Array.from(data.agents).join(', ')}</td>
                     <td className="py-2 text-right font-semibold text-red-600 dark:text-red-400">{data.count}</td>
                   </tr>
                 ))}
@@ -193,63 +194,63 @@ export default function ReportPage() {
           </div>
 
           {/* Detailed Violations */}
-          <div className="px-12 py-8">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Detailed Violations</h2>
+          <div className="px-10 sm:px-12 py-8">
+            <h2 className="text-lg font-bold text-[#1C1917] dark:text-[#F0EAE2] mb-6">Detailed Violations</h2>
 
             {orderedCommunities.map((comm, ci) => (
               <div key={comm} className={ci > 0 ? 'mt-10' : ''}>
                 <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">{comm}</h3>
+                  <h3 className="text-base font-bold text-[#1C1917] dark:text-[#F0EAE2]">{comm}</h3>
                   <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-semibold px-2 py-0.5 rounded-full">
                     {byCommunity[comm].length} violation{byCommunity[comm].length !== 1 ? 's' : ''}
                   </span>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {byCommunity[comm].map(c => {
                     violationNum++
                     return (
-                      <div key={c.id} className="border border-zinc-200 dark:border-[#2a2a2a] rounded-lg overflow-hidden">
-                        <div className="flex items-center justify-between bg-zinc-50 dark:bg-[#1a1a1a] px-4 py-2.5 border-b border-zinc-200 dark:border-[#2a2a2a]">
+                      <div key={c.id} className="shadow-sm rounded-2xl overflow-hidden">
+                        <div className="flex items-center justify-between bg-[#EAE4DC] dark:bg-[#1C1814] px-4 py-2.5 border-b border-black/[0.06] dark:border-white/[0.06]">
                           <div className="flex items-center gap-3">
                             <span className="text-xs font-bold text-white bg-red-500 rounded-full w-6 h-6 flex items-center justify-center shrink-0">
                               {violationNum}
                             </span>
-                            <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{c.dr_location}</span>
+                            <span className="text-sm font-semibold text-[#1C1917] dark:text-[#F0EAE2] truncate">{c.dr_location}</span>
                           </div>
-                          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 shrink-0 ml-4">
+                          <span className="text-xs font-mono text-[#9A8E84] dark:text-[#7A7068] shrink-0 ml-4">
                             Permit: {c.permit_number}
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-700">
+                        <div className="grid grid-cols-2 divide-x divide-black/[0.06] dark:divide-white/[0.06]">
                           <div className="px-4 py-3">
-                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-2">
+                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-2">
                               Dubai Residential — Official
                             </p>
-                            <p className="text-sm text-zinc-800 dark:text-zinc-200">{c.dr_location}</p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                            <p className="text-sm text-[#1C1917] dark:text-[#F0EAE2]">{c.dr_location}</p>
+                            <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">
                               {c.dr_beds} Bed · {c.dr_baths} Bath
                             </p>
-                            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Ref: {c.dr_reference}</p>
+                            <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">Ref: {c.dr_reference}</p>
                             <a href={c.dr_bayut_url} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-violet-500 hover:underline mt-1 block print:text-zinc-600 print:no-underline">
+                              className="text-xs text-amber-600 dark:text-amber-400 hover:underline mt-1 block print:text-[#9A8E84] print:no-underline">
                               {c.dr_bayut_url}
                             </a>
                           </div>
 
-                          <div className="px-4 py-3 bg-red-50 dark:bg-red-950/20">
-                            <p className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide mb-2">
+                          <div className="px-4 py-3 bg-red-50/50 dark:bg-red-950/20">
+                            <p className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide mb-2">
                               Unauthorized Listing
                             </p>
                             <p className="text-sm font-semibold text-red-800 dark:text-red-300">{c.agency_name}</p>
-                            <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-0.5">Agent: {c.agent_name}</p>
+                            <p className="text-xs text-[#1C1917] dark:text-[#F0EAE2] mt-0.5">Agent: {c.agent_name}</p>
                             {c.agent_mobile && (
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">Tel: {c.agent_mobile}</p>
+                              <p className="text-xs text-[#9A8E84] dark:text-[#7A7068]">Tel: {c.agent_mobile}</p>
                             )}
-                            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Ref: {c.unauthorized_reference}</p>
+                            <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">Ref: {c.unauthorized_reference}</p>
                             <a href={c.unauthorized_url} target="_blank" rel="noopener noreferrer"
-                              className="text-xs text-violet-500 hover:underline mt-1 block print:text-zinc-600 print:no-underline">
+                              className="text-xs text-amber-600 dark:text-amber-400 hover:underline mt-1 block print:text-[#9A8E84] print:no-underline">
                               {c.unauthorized_url}
                             </a>
                           </div>
@@ -263,8 +264,8 @@ export default function ReportPage() {
           </div>
 
           {/* Footer */}
-          <div className="px-12 py-6 border-t border-zinc-200 dark:border-[#222] bg-zinc-50 dark:bg-[#0a0a0a] print:bg-white rounded-b-xl">
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center">
+          <div className="px-10 sm:px-12 py-5 border-t  bg-[#EAE4DC] dark:bg-[#1C1814] print:bg-white rounded-b-2xl">
+            <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] text-center">
               Dubai Residential L.L.C · Confidential · Generated {reportDate} ·
               All violations confirmed via DLD permit number cross-reference
             </p>

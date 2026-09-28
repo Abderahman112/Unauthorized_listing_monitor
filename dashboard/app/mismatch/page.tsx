@@ -62,36 +62,34 @@ export default function MismatchPage() {
     price_mismatch:     rows.filter(r => r.status === 'matched' && (r.price_diff_pct ?? 0) > 5).length,
   }
 
-  const tabs: { key: Tab; label: string; count: number; color: string }[] = [
-    { key: 'all',                label: 'All',               count: rows.length,              color: 'bg-zinc-100 dark:bg-[#1a1a1a] text-zinc-700 dark:text-zinc-200' },
-    { key: 'matched',            label: 'Matched',           count: counts.matched,           color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
-    { key: 'missing_from_bayut', label: 'Missing from Bayut', count: counts.missing_from_bayut, color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
-    { key: 'extra_on_bayut',     label: 'Extra on Bayut',    count: counts.extra_on_bayut,    color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' },
+  const tabs: { key: Tab; label: string; count: number; active: string; inactive: string }[] = [
+    { key: 'all',                label: 'All',              count: rows.length,              active: 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900',    inactive: 'bg-white dark:bg-[#2C2822] text-[#1C1917] dark:text-[#F0EAE2] shadow-sm' },
+    { key: 'matched',            label: 'Matched',          count: counts.matched,           active: 'bg-emerald-600 text-white',  inactive: 'bg-white dark:bg-[#2C2822] text-[#1C1917] dark:text-[#F0EAE2] shadow-sm' },
+    { key: 'missing_from_bayut', label: 'Missing on Bayut', count: counts.missing_from_bayut, active: 'bg-red-600 text-white',     inactive: 'bg-white dark:bg-[#2C2822] text-[#1C1917] dark:text-[#F0EAE2] shadow-sm' },
+    { key: 'extra_on_bayut',     label: 'Extra on Bayut',   count: counts.extra_on_bayut,    active: 'bg-amber-500 text-stone-900', inactive: 'bg-white dark:bg-[#2C2822] text-[#1C1917] dark:text-[#F0EAE2] shadow-sm' },
   ]
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#0a0a0a]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-full px-6 py-8 md:px-10">
 
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">DR Website vs Bayut</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Comparing your 118 website units against your 146 official Bayut listings
-          </p>
-        </div>
+      <div className="mb-8">
+        <p className="text-xs font-semibold text-[#C17F5A] uppercase tracking-widest mb-1">Reports</p>
+        <h1 className="text-3xl font-bold text-[#1C1917] dark:text-[#F0EAE2] tracking-tight">DR Website vs Bayut</h1>
+        <p className="text-sm text-[#9A8E84] dark:text-[#7A7068] mt-1">Comparing your 118 website units against your 146 official Bayut listings</p>
+      </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: 'Matched',            value: counts.matched,            color: 'text-emerald-600 dark:text-emerald-400', sub: 'found on both' },
-            { label: 'Missing from Bayut', value: counts.missing_from_bayut, color: 'text-red-600 dark:text-red-400',     sub: 'on website, not on Bayut' },
-            { label: 'Extra on Bayut',     value: counts.extra_on_bayut,     color: 'text-amber-600 dark:text-amber-400', sub: 'on Bayut, not on website' },
-            { label: 'Price Mismatch',     value: counts.price_mismatch,     color: 'text-purple-600 dark:text-purple-400', sub: 'price differs >5%' },
+            { label: 'Matched',            value: counts.matched,            color: 'text-emerald-600 dark:text-emerald-400', border: 'border-l-emerald-500', sub: 'found on both'          },
+            { label: 'Missing from Bayut', value: counts.missing_from_bayut, color: 'text-red-600 dark:text-red-400',         border: 'border-l-red-500',     sub: 'on website, not Bayut' },
+            { label: 'Extra on Bayut',     value: counts.extra_on_bayut,     color: 'text-amber-600 dark:text-amber-400',     border: 'border-l-amber-500',   sub: 'on Bayut, not website' },
+            { label: 'Price Mismatch',     value: counts.price_mismatch,     color: 'text-rose-600 dark:text-rose-400',       border: 'border-l-rose-500',    sub: 'price differs >5%'     },
           ].map(s => (
-            <div key={s.label} className="bg-white dark:bg-[#111] rounded-xl border border-zinc-200 dark:border-[#222] p-4 shadow-sm">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{s.label}</p>
+            <div key={s.label} className={`bg-white dark:bg-[#2C2822] rounded-2xl shadow-sm border-l-4 ${s.border} p-4 shadow-sm`}>
+              <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mb-1">{s.label}</p>
               <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">{s.sub}</p>
+              <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-1">{s.sub}</p>
             </div>
           ))}
         </div>
@@ -103,11 +101,7 @@ export default function MismatchPage() {
               <button
                 key={t.key}
                 onClick={() => { setTab(t.key); setPriceOnly(false) }}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  tab === t.key
-                    ? t.color + ' ring-1 ring-inset ring-current'
-                    : 'bg-white dark:bg-[#111] text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-[#222] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a]'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? t.active : t.inactive + ' hover:bg-[#EAE4DC]/60 dark:hover:bg-[#1C1814]/60'}`}
               >
                 {t.label} <span className="ml-1 opacity-60">{t.count}</span>
               </button>
@@ -115,28 +109,28 @@ export default function MismatchPage() {
           </div>
           <div className="flex items-center gap-4">
             {(tab === 'matched' || tab === 'all') && (
-              <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 cursor-pointer">
-                <input type="checkbox" checked={priceOnly} onChange={e => setPriceOnly(e.target.checked)} className="rounded" />
+              <label className="flex items-center gap-2 text-sm text-[#1C1917] dark:text-[#F0EAE2] cursor-pointer">
+                <input type="checkbox" checked={priceOnly} onChange={e => setPriceOnly(e.target.checked)} className="rounded accent-amber-500" />
                 Price mismatch only (&gt;5%)
               </label>
             )}
-            <span className="text-sm text-zinc-400 dark:text-zinc-500">{filtered.length} rows</span>
+            <span className="text-sm text-[#9A8E84] dark:text-[#7A7068]">{filtered.length} rows</span>
           </div>
         </div>
 
         {/* Rows */}
         {loading ? (
-          <div className="text-center py-20 text-zinc-400 dark:text-zinc-600">Loading...</div>
+          <div className="text-center py-20 text-[#9A8E84] dark:text-[#7A7068]">Loading...</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-zinc-400 dark:text-zinc-600">No results</div>
+          <div className="text-center py-20 text-[#9A8E84] dark:text-[#7A7068]">No results</div>
         ) : (
           <div className="space-y-3">
             {filtered.map(r => (
-              <div key={r.id} className={`bg-white dark:bg-[#111] rounded-xl border shadow-sm p-5 ${
-                r.status === 'missing_from_bayut' ? 'border-red-200 dark:border-red-900' :
-                r.status === 'extra_on_bayut'     ? 'border-amber-200 dark:border-amber-900' :
-                (r.price_diff_pct ?? 0) > 5       ? 'border-purple-200 dark:border-purple-900' :
-                                                     'border-zinc-200 dark:border-[#222]'
+              <div key={r.id} className={`bg-white dark:bg-[#2C2822] rounded-2xl border shadow-sm p-5 ${
+                r.status === 'missing_from_bayut' ? 'border-red-200 dark:border-red-900/50' :
+                r.status === 'extra_on_bayut'     ? 'border-amber-200 dark:border-amber-900/50' :
+                (r.price_diff_pct ?? 0) > 5       ? 'border-rose-200 dark:border-rose-900/50' :
+                                                     ''
               }`}>
                 <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
 
@@ -161,23 +155,23 @@ export default function MismatchPage() {
 
                   {/* DR side */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wide mb-1">DR Website</p>
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wide mb-1">DR Website</p>
                     {r.dr_url ? (
                       <>
                         <a href={r.dr_url} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-medium text-zinc-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 truncate block">
+                          className="text-sm font-medium text-[#1C1917] dark:text-[#F0EAE2] hover:text-amber-600 dark:hover:text-amber-400 truncate block">
                           {r.dr_location}
                         </a>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">
                           {r.dr_unit_id} · {r.dr_beds}bd · {r.dr_baths}ba · {r.dr_size_sqft?.toLocaleString()} sqft
                         </p>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-white mt-1">
+                        <p className="text-sm font-bold text-[#1C1917] dark:text-[#F0EAE2] mt-1">
                           AED {r.dr_price_aed?.toLocaleString()}
                         </p>
-                        {r.dr_building && <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Building {r.dr_building}</p>}
+                        {r.dr_building && <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">Building {r.dr_building}</p>}
                       </>
                     ) : (
-                      <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">Not on DR website</p>
+                      <p className="text-sm text-[#9A8E84] dark:text-[#7A7068] italic">Not on DR website</p>
                     )}
                   </div>
 
@@ -188,7 +182,7 @@ export default function MismatchPage() {
                         <div className={`rounded-lg px-2 py-1 text-xs font-semibold ${
                           (r.price_diff_pct ?? 0) > 10 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
                           (r.price_diff_pct ?? 0) > 5  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
-                                                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                                          'bg-stone-100 dark:bg-[#2A2218] text-[#9A8E84] dark:text-[#9A8E84]'
                         }`}>
                           Price diff<br />{r.price_diff_pct}%
                         </div>
@@ -198,7 +192,7 @@ export default function MismatchPage() {
                         </div>
                       )}
                       {(r.size_diff_pct ?? 0) > 0 && (
-                        <div className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+                        <div className="mt-1 text-xs text-[#9A8E84] dark:text-[#7A7068]">
                           Size diff: {r.size_diff_pct}%
                         </div>
                       )}
@@ -207,24 +201,24 @@ export default function MismatchPage() {
 
                   {/* Bayut side */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-orange-500 dark:text-orange-400 uppercase tracking-wide mb-1">Bayut (DR Official)</p>
+                    <p className="text-xs font-bold text-[#9A8E84] dark:text-[#7A7068] uppercase tracking-wide mb-1">Bayut (DR Official)</p>
                     {r.bayut_url ? (
                       <>
                         <a href={r.bayut_url} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-medium text-zinc-900 dark:text-white hover:text-violet-600 dark:hover:text-violet-400 truncate block">
+                          className="text-sm font-medium text-[#1C1917] dark:text-[#F0EAE2] hover:text-amber-600 dark:hover:text-amber-400 truncate block">
                           {r.bayut_location}
                         </a>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">
                           Ref: {r.bayut_reference} · {r.bayut_beds}bd · {r.bayut_baths}ba · {r.bayut_sqft?.toLocaleString()} sqft
                         </p>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-white mt-1">
+                        <p className="text-sm font-bold text-[#1C1917] dark:text-[#F0EAE2] mt-1">
                           AED {r.bayut_price?.toLocaleString()}
                         </p>
-                        {r.bayut_building && <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Building {r.bayut_building}</p>}
-                        {r.bayut_permit && <p className="text-xs text-zinc-400 dark:text-zinc-500">Permit: {r.bayut_permit}</p>}
+                        {r.bayut_building && <p className="text-xs text-[#9A8E84] dark:text-[#7A7068] mt-0.5">Building {r.bayut_building}</p>}
+                        {r.bayut_permit && <p className="text-xs text-[#9A8E84] dark:text-[#7A7068]">Permit: {r.bayut_permit}</p>}
                       </>
                     ) : (
-                      <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">Not on Bayut</p>
+                      <p className="text-sm text-[#9A8E84] dark:text-[#7A7068] italic">Not on Bayut</p>
                     )}
                   </div>
                 </div>
@@ -232,7 +226,7 @@ export default function MismatchPage() {
             ))}
           </div>
         )}
-      </div>
+      <div className="h-10" />
     </div>
   )
 }

@@ -1,15 +1,21 @@
 @import "tailwindcss";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #18181B;
+  --background: #EAE4DC;
+  --foreground: #1C1917;
+  --sidebar:    #FFFFFF;
+  --card:       #FFFFFF;
+  --muted:      #9A8E84;
+  --accent:     #C17F5A;
 }
-
 .dark {
-  --background: #09090B;
-  --foreground: #FAFAFA;
+  --background: #1C1814;
+  --foreground: #F0EAE2;
+  --sidebar:    #231F1B;
+  --card:       #2C2822;
+  --muted:      #7A7068;
+  --accent:     #D4956A;
 }
 
 @theme inline {
@@ -22,7 +28,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 @media print {
